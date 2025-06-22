@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Checkout zipper
+      uses: actions/checkout@v2
+      with:
+        repository: Lafactorial/AnyKernel31
+        ref: sweetk6a
+        path: zipper
+
+    - name: Android kernel build
+      uses: Keinamvy/android-kernel-actions@master
+      id: build
+      env:
+        NAME: Positron_KSU
+      with:
+        arch: arm64
+        compiler: clang/15
+        defconfig: sweet2_defconfig
+        image: Image
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: |
+          zipper/
+          !zipper/.gitignore
+          !zipper/README.md
+        compression-level: 9
+        name: ${{ steps.build.outputs.outfile }}
